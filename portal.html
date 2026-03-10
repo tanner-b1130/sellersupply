@@ -219,7 +219,7 @@
       <div class="membership-banner">
         <div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Annual Membership — Active</div>
-          <div style="font-size:13px;color:#9BB0D4;">Renews January 15, 2027 · 312 days remaining · Full catalog access enabled</div>
+          <div style="font-size:13px;color:#9BB0D4;" id="membership-status-line">Loading...</div>
         </div>
         <div class="membership-badge">✓ Active</div>
       </div>
@@ -630,6 +630,7 @@
 var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbycpDWHaAI9lJhHbesmrePYsExEabhvdY9t3cnkHdt0QJgxmdKfFIc8boFq5EZJhniu/exec';
 var MEMBER_ID = '';
 var MEMBER_NAME = '';
+var MEMBER_JOIN = '';
 var allProducts = [];
 var activeFilter = 'All';
 var currentPage = 1;
@@ -1214,9 +1215,11 @@ function syncPoCounter() {
 window.addEventListener('load', function() {
   var savedId   = sessionStorage.getItem('ss_member_id');
   var savedName = sessionStorage.getItem('ss_member_name');
+  var savedJoin = sessionStorage.getItem('ss_join_date');
   if (savedId && savedName && savedId.length > 0 && savedName.length > 0) {
     MEMBER_ID   = savedId;
     MEMBER_NAME = savedName;
+    MEMBER_JOIN = savedJoin || '';
     startPortal();
   }
 });function loadSettings() {
@@ -1293,7 +1296,7 @@ function handleGoogleLogin(response) {
 
   var ADMINS = ['tanner@kaliurbandistro.com', 'mike@kaliurbandistro.com'];
   var MEMBERS = {
-    'ticker1130@gmail.com': { id: 'SS-0001', name: 'Mike Nugent' },
+    'ticker1130@gmail.com': { id: 'SS-0001', name: 'Mike Nugent', joinDate: '2026-03-10' },
   };
 
   var isAdmin = ADMINS.indexOf(email) >= 0;
@@ -1309,11 +1312,36 @@ function handleGoogleLogin(response) {
 
   sessionStorage.setItem('ss_member_id', MEMBER_ID);
   sessionStorage.setItem('ss_member_name', MEMBER_NAME);
+  sessionStorage.setItem('ss_join_date', isAdmin ? '' : (member.joinDate || ''));
+  MEMBER_JOIN = isAdmin ? '' : (member.joinDate || '');
 
   startPortal();
 }
 
+function updateMembershipBanner() {
+  var el = document.getElementById('membership-status-line');
+  if (!el) return;
+  if (!MEMBER_JOIN || MEMBER_ID === 'ALL') {
+    el.textContent = 'Full catalog access enabled';
+    return;
+  }
+  var join = new Date(MEMBER_JOIN);
+  var renew = new Date(join);
+  renew.setFullYear(renew.getFullYear() + 1);
+  var today = new Date();
+  today.setHours(0,0,0,0);
+  var daysLeft = Math.ceil((renew - today) / (1000 * 60 * 60 * 24));
+  var renewStr = renew.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  if (daysLeft <= 0) {
+    el.textContent = 'Membership expired — please contact support to renew';
+    el.style.color = '#EF4444';
+  } else {
+    el.textContent = 'Renews ' + renewStr + ' · ' + daysLeft + ' days remaining · Full catalog access enabled';
+  }
+}
+
 function startPortal() {
+  updateMembershipBanner();
   var initials = MEMBER_NAME.replace(' (Admin)','').split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2)||'??';
   document.getElementById('sidebar-avatar').textContent = initials;
   document.getElementById('sidebar-name').textContent = MEMBER_NAME;
