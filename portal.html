@@ -142,7 +142,16 @@
 
   #setup-banner { display:none; background:rgba(245,197,0,0.08); border:1px solid rgba(245,197,0,0.25); border-radius:10px; padding:20px 24px; margin-bottom:20px; gap:16px; }
 
-  #toast { display:none; position:fixed; bottom:32px; right:32px; background:var(--green); color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; padding:14px 24px; border-radius:8px; z-index:999; box-shadow:0 8px 32px rgba(34,197,94,0.3); }
+  .toggle-slider {
+    position:absolute; top:0; left:0; right:0; bottom:0;
+    background:rgba(255,255,255,0.15); border-radius:24px; transition:0.3s;
+  }
+  .toggle-slider:before {
+    content:""; position:absolute; height:18px; width:18px; left:3px; bottom:3px;
+    background:white; border-radius:50%; transition:0.3s;
+  }
+  input:checked + .toggle-slider { background:var(--blue); }
+  input:checked + .toggle-slider:before { transform:translateX(20px); } display:none; position:fixed; bottom:32px; right:32px; background:var(--green); color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; padding:14px 24px; border-radius:8px; z-index:999; box-shadow:0 8px 32px rgba(34,197,94,0.3); }
 </style>
 </head>
 <body>
@@ -182,8 +191,8 @@
     <a class="nav-item" data-tab="community"><span class="nav-icon">💬</span> Member Forum</a>
     <a class="nav-item" data-tab="training"><span class="nav-icon">🎓</span> Training Vault</a>
     <div class="nav-label">Account</div>
-    <a class="nav-item"><span class="nav-icon">⚙️</span> Settings</a>
-    <a class="nav-item"><span class="nav-icon">🎧</span> Support</a>
+    <a class="nav-item" data-tab="settings"><span class="nav-icon">⚙️</span> Settings</a>
+    <a class="nav-item" data-tab="support"><span class="nav-icon">🎧</span> Support</a>
   </nav>
   <div class="sidebar-footer">
     <div class="member-card">
@@ -415,6 +424,171 @@
 
 <div id="toast">✓ PO Submitted — Our Team Is On It</div>
 
+  <!-- SETTINGS -->
+  <div id="tab-settings" class="tab" style="display:none;">
+    <div class="topbar"><div class="topbar-title">Settings</div></div>
+    <div class="content">
+      <div class="grid-2">
+        <div>
+          <!-- Membership Info -->
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header"><div class="card-title">Membership Info</div></div>
+            <div class="card-body">
+              <div class="stats-row" style="grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="stat-label" style="font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:0.06em;">Member ID</div>
+                <div class="stat-label" style="font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:0.06em;">Plan</div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--yellow);" id="settings-member-id">—</div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--green);">Annual Member</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Display Name -->
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header"><div class="card-title">Display Name</div></div>
+            <div class="card-body">
+              <div class="fg">
+                <label class="fl">Your Name</label>
+                <input class="fi" id="settings-name" type="text" placeholder="Your display name">
+              </div>
+              <button class="btn btn-yellow" id="save-name-btn" style="margin-top:4px;">Save Name</button>
+              <div id="save-name-status" style="display:none;margin-top:8px;font-size:13px;color:var(--green);">✓ Saved</div>
+            </div>
+          </div>
+
+          <!-- Preferred Platform -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">Preferred Platform</div></div>
+            <div class="card-body">
+              <div class="fg">
+                <label class="fl">Default Platform for Orders</label>
+                <select class="fs" id="settings-platform">
+                  <option value="Amazon FBA">Amazon FBA</option>
+                  <option value="Walmart WFS">Walmart WFS</option>
+                  <option value="Both">Both</option>
+                </select>
+              </div>
+              <button class="btn btn-yellow" id="save-platform-btn" style="margin-top:4px;">Save Preference</button>
+              <div id="save-platform-status" style="display:none;margin-top:8px;font-size:13px;color:var(--green);">✓ Saved</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <!-- Notification Preferences -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">Notification Preferences</div></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;color:var(--white);">Order Status Updates</div>
+                    <div style="font-size:12px;color:var(--gray);margin-top:2px;">Get notified when your order status changes</div>
+                  </div>
+                  <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;">
+                    <input type="checkbox" id="notif-orders" checked style="opacity:0;width:0;height:0;">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;justify-content:space-between;align-items:center;">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;color:var(--white);">New Catalog Products</div>
+                    <div style="font-size:12px;color:var(--gray);margin-top:2px;">Get notified when new products are added</div>
+                  </div>
+                  <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;">
+                    <input type="checkbox" id="notif-catalog" checked style="opacity:0;width:0;height:0;">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;justify-content:space-between;align-items:center;">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;color:var(--white);">Forum Activity</div>
+                    <div style="font-size:12px;color:var(--gray);margin-top:2px;">Get notified of new posts in the forum</div>
+                  </div>
+                  <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;">
+                    <input type="checkbox" id="notif-forum" style="opacity:0;width:0;height:0;">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              <button class="btn btn-yellow" id="save-notif-btn" style="margin-top:20px;">Save Preferences</button>
+              <div id="save-notif-status" style="display:none;margin-top:8px;font-size:13px;color:var(--green);">✓ Saved</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUPPORT -->
+  <div id="tab-support" class="tab" style="display:none;">
+    <div class="topbar"><div class="topbar-title">Support</div></div>
+    <div class="content">
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Submit a Support Ticket</div></div>
+            <div class="card-body">
+              <div class="fg">
+                <label class="fl">Subject</label>
+                <select class="fs" id="ticket-subject">
+                  <option>Order Issue</option>
+                  <option>Catalog Question</option>
+                  <option>Billing / Membership</option>
+                  <option>Platform Access</option>
+                  <option>Shipping / Labels</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="fg">
+                <label class="fl">Related PO # (if applicable)</label>
+                <input class="fi" id="ticket-po" type="text" placeholder="e.g. SS-0012">
+              </div>
+              <div class="fg">
+                <label class="fl">Message</label>
+                <textarea class="fi" id="ticket-message" rows="5" placeholder="Describe your issue in detail..." style="resize:vertical;"></textarea>
+              </div>
+              <button class="btn btn-yellow" id="submit-ticket-btn">Submit Ticket</button>
+              <div id="ticket-status" style="display:none;margin-top:12px;padding:10px 14px;border-radius:6px;font-size:13px;font-weight:600;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header"><div class="card-title">Response Times</div></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+                  <div style="font-size:13px;color:var(--white);">Order Issues</div>
+                  <div style="font-size:13px;font-weight:700;color:var(--green);">Within 4 hours</div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+                  <div style="font-size:13px;color:var(--white);">General Questions</div>
+                  <div style="font-size:13px;font-weight:700;color:var(--yellow);">Within 24 hours</div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+                  <div style="font-size:13px;color:var(--white);">Billing / Membership</div>
+                  <div style="font-size:13px;font-weight:700;color:var(--yellow);">Within 24 hours</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Direct Contact</div></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:12px;">
+              <div style="font-size:13px;color:var(--gray);">For urgent matters you can reach us directly:</div>
+              <a href="mailto:tanner@kaliurbandistro.com" style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(26,79,191,0.1);border:1px solid rgba(26,79,191,0.25);border-radius:8px;text-decoration:none;">
+                <span style="font-size:20px;">📧</span>
+                <div><div style="font-size:13px;font-weight:600;color:var(--white);">Email Us</div><div style="font-size:12px;color:var(--gray);">tanner@kaliurbandistro.com</div></div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <!-- LABEL UPLOAD MODAL -->
 <div class="overlay" id="modal-labels">
   <div class="modal">
@@ -464,6 +638,7 @@ function showTab(id) {
   if (id === 'catalog') loadCatalog();
   if (id === 'orders') loadOrders();
   if (id === 'community') loadPosts();
+  if (id === 'settings') loadSettings();
 }
 
 document.querySelectorAll('.nav-item[data-tab]').forEach(function(el) {
@@ -936,7 +1111,74 @@ function syncPoCounter() {
     }).catch(function() {});
 }
 
-// ── GOOGLE LOGIN CALLBACK (global) ──
+// ── SETTINGS ──
+function loadSettings() {
+  document.getElementById('settings-member-id').textContent = MEMBER_ID === 'ALL' ? 'Admin' : MEMBER_ID;
+  document.getElementById('settings-name').value = MEMBER_NAME.replace(' (Admin)','');
+  var savedPlatform = sessionStorage.getItem('ss_platform') || 'Amazon FBA';
+  document.getElementById('settings-platform').value = savedPlatform;
+}
+
+document.getElementById('save-name-btn').addEventListener('click', function() {
+  var status = document.getElementById('save-name-status');
+  status.style.display = 'block';
+  setTimeout(function() { status.style.display = 'none'; }, 2000);
+});
+
+document.getElementById('save-platform-btn').addEventListener('click', function() {
+  sessionStorage.setItem('ss_platform', document.getElementById('settings-platform').value);
+  var status = document.getElementById('save-platform-status');
+  status.style.display = 'block';
+  setTimeout(function() { status.style.display = 'none'; }, 2000);
+});
+
+document.getElementById('save-notif-btn').addEventListener('click', function() {
+  var status = document.getElementById('save-notif-status');
+  status.style.display = 'block';
+  setTimeout(function() { status.style.display = 'none'; }, 2000);
+});
+
+// ── SUPPORT ──
+document.getElementById('submit-ticket-btn').addEventListener('click', function() {
+  var message = document.getElementById('ticket-message').value.trim();
+  if (!message) { alert('Please describe your issue before submitting.'); return; }
+  var btn = this;
+  btn.textContent = '⏳ Submitting...';
+  btn.disabled = true;
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      type:      'ticket',
+      memberId:  MEMBER_ID,
+      member:    MEMBER_NAME.replace(' (Admin)',''),
+      subject:   document.getElementById('ticket-subject').value,
+      po:        document.getElementById('ticket-po').value || 'N/A',
+      message:   message
+    })
+  }).then(function(r) { return r.json(); })
+  .then(function() {
+    var status = document.getElementById('ticket-status');
+    status.style.display = 'block';
+    status.style.background = 'rgba(34,197,94,0.1)';
+    status.style.color = '#22C55E';
+    status.style.border = '1px solid rgba(34,197,94,0.2)';
+    status.textContent = '✓ Ticket submitted! We\'ll get back to you within 24 hours.';
+    document.getElementById('ticket-message').value = '';
+    document.getElementById('ticket-po').value = '';
+    btn.textContent = 'Submit Ticket';
+    btn.disabled = false;
+  }).catch(function() {
+    var status = document.getElementById('ticket-status');
+    status.style.display = 'block';
+    status.style.background = 'rgba(239,68,68,0.1)';
+    status.style.color = '#EF4444';
+    status.style.border = '1px solid rgba(239,68,68,0.2)';
+    status.textContent = '✗ Failed to submit. Please email us directly.';
+    btn.textContent = 'Submit Ticket';
+    btn.disabled = false;
+  });
+});
 function handleGoogleLogin(response) {
   console.log('Login callback fired');
   var payload = JSON.parse(atob(response.credential.split('.')[1]));
