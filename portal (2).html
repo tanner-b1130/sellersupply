@@ -1281,9 +1281,7 @@ function handleGoogleLogin(response) {
   console.log('Email:', email);
 
   var ADMINS = ['tanner@kaliurbandistro.com', 'mike@kaliurbandistro.com'];
-  var MEMBERS = {
-    // 'client@gmail.com': { id: 'SS-0001', name: 'John Smith' },
-    'ticker1130@gmail.com': { id: 'SS-0001', name: 'Mike Nugent' },
+  var MEMBERS = {'ticker1130@gmail.com': { id: 'SS-0001', name: 'Mike Nugent' },
   };
 
   var isAdmin = ADMINS.indexOf(email) >= 0;
