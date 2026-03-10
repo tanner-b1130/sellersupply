@@ -319,6 +319,14 @@
           <thead><tr><th colspan="3">Order Details</th></tr></thead>
           <tbody id="orders-rows"><tr><td colspan="3" style="text-align:center;padding:40px;color:var(--gray);">⏳ Loading orders...</td></tr></tbody>
         </table>
+        <div id="ord-pagination" style="display:none;align-items:center;justify-content:space-between;padding:16px 0 4px;">
+          <div style="font-size:13px;color:var(--gray);" id="ord-page-info"></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn btn-ghost" id="ord-prev" style="font-size:12px;padding:6px 14px;">← Prev</button>
+            <div id="ord-page-nums" style="display:flex;gap:4px;"></div>
+            <button class="btn btn-ghost" id="ord-next" style="font-size:12px;padding:6px 14px;">Next →</button>
+          </div>
+        </div>
       </div></div>
     </div>
   </div>
@@ -626,6 +634,8 @@ var allProducts = [];
 var activeFilter = 'All';
 var currentPage = 1;
 var PAGE_SIZE = 20;
+var allOrders = [];
+var ordersPage = 1;
 var poCounter = 0;
 var currentLabelPO = '';
 var currentLabelProduct = '';
@@ -858,6 +868,12 @@ document.getElementById('submit-post-btn').addEventListener('click', function() 
 
 document.getElementById('refresh-posts-btn').addEventListener('click', loadPosts);
 document.getElementById('refresh-orders-btn').addEventListener('click', loadOrders);
+document.getElementById('ord-prev').addEventListener('click', function() { if (ordersPage > 1) { ordersPage--; renderOrders(); } });
+document.getElementById('ord-next').addEventListener('click', function() { ordersPage++; renderOrders(); });
+document.getElementById('ord-page-nums').addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-page]');
+  if (btn) { ordersPage = parseInt(btn.getAttribute('data-page')); renderOrders(); }
+});
 
 // ── CATALOG ──
 function loadCatalog() {
@@ -958,33 +974,66 @@ function loadOrders() {
   fetch(SCRIPT_URL + '?action=orders' + (MEMBER_ID !== 'ALL' ? '&member=' + encodeURIComponent(MEMBER_ID) : ''))
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      var orders = data.orders || [];
-      if (!orders.length) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:40px;color:var(--gray);">No orders yet.</td></tr>';
-        return;
-      }
-      tbody.innerHTML = orders.map(function(o) {
-        var hasDims = o.boxWeight || o.boxDims || o.boxes || o.unitsPerBox;
-        var dimsPanel = hasDims ? '<div style="margin-top:10px;padding:10px 14px;background:rgba(26,79,191,0.12);border:1px solid rgba(26,79,191,0.25);border-radius:8px;font-size:12px;color:var(--gray);">'
-          + '<div style="font-weight:700;color:var(--blue);margin-bottom:6px;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;">Shipping Dims</div>'
-          + (o.boxes ? '<div>Boxes: <strong style="color:var(--white);">' + o.boxes + '</strong></div>' : '')
-          + (o.unitsPerBox ? '<div>Units/Box: <strong style="color:var(--white);">' + o.unitsPerBox + '</strong></div>' : '')
-          + (o.boxWeight ? '<div>Box Weight: <strong style="color:var(--white);">' + o.boxWeight + '</strong></div>' : '')
-          + (o.boxDims ? '<div>Box Dims: <strong style="color:var(--white);">' + o.boxDims + '</strong></div>' : '')
-          + (o.palletWeight ? '<div>Pallet Weight: <strong style="color:var(--white);">' + o.palletWeight + '</strong></div>' : '')
-          + (o.palletDims ? '<div>Pallet Dims: <strong style="color:var(--white);">' + o.palletDims + '</strong></div>' : '')
-          + '</div>' : '';
-        return '<tr>'
-          + '<td><div class="pname">' + (o.product||'—') + '</div>'
-          + '<div style="font-size:12px;color:var(--gray);margin-top:2px;">' + (o.poNumber||'') + ' · ' + (o.date||'') + '</div>'
-          + dimsPanel + '</td>'
-          + '<td>' + statusBadge(o.status) + '</td>'
-          + '<td><button class="btn btn-ghost" style="font-size:11px;padding:6px 10px;" onclick="openLabelModal(\'' + (o.poNumber||'') + '\',\'' + (o.product||'').replace(/'/g,"\\'") + '\')">📎 Labels</button></td>'
-          + '</tr>';
-      }).join('');
+      allOrders = data.orders || [];
+      ordersPage = 1;
+      renderOrders();
     }).catch(function() {
       tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:40px;color:var(--gray);">Could not load orders.</td></tr>';
     });
+}
+
+function renderOrders() {
+  var tbody = document.getElementById('orders-rows');
+  if (!allOrders.length) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:40px;color:var(--gray);">No orders yet.</td></tr>';
+    document.getElementById('ord-pagination').style.display = 'none';
+    return;
+  }
+  var totalPages = Math.max(1, Math.ceil(allOrders.length / PAGE_SIZE));
+  if (ordersPage > totalPages) ordersPage = 1;
+  var start = (ordersPage - 1) * PAGE_SIZE;
+  var pageItems = allOrders.slice(start, start + PAGE_SIZE);
+
+  tbody.innerHTML = pageItems.map(function(o) {
+    var hasDims = o.boxWeight || o.boxDims || o.boxes || o.unitsPerBox;
+    var dimsPanel = hasDims ? '<div style="margin-top:10px;padding:10px 14px;background:rgba(26,79,191,0.12);border:1px solid rgba(26,79,191,0.25);border-radius:8px;font-size:12px;color:var(--gray);">'
+      + '<div style="font-weight:700;color:var(--blue);margin-bottom:6px;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;">Shipping Dims</div>'
+      + (o.boxes ? '<div>Boxes: <strong style="color:var(--white);">' + o.boxes + '</strong></div>' : '')
+      + (o.unitsPerBox ? '<div>Units/Box: <strong style="color:var(--white);">' + o.unitsPerBox + '</strong></div>' : '')
+      + (o.boxWeight ? '<div>Box Weight: <strong style="color:var(--white);">' + o.boxWeight + '</strong></div>' : '')
+      + (o.boxDims ? '<div>Box Dims: <strong style="color:var(--white);">' + o.boxDims + '</strong></div>' : '')
+      + (o.palletWeight ? '<div>Pallet Weight: <strong style="color:var(--white);">' + o.palletWeight + '</strong></div>' : '')
+      + (o.palletDims ? '<div>Pallet Dims: <strong style="color:var(--white);">' + o.palletDims + '</strong></div>' : '')
+      + '</div>' : '';
+    return '<tr>'
+      + '<td><div class="pname">' + (o.product||'—') + '</div>'
+      + '<div style="font-size:12px;color:var(--gray);margin-top:2px;">' + (o.poNumber||'') + ' · ' + (o.date||'') + '</div>'
+      + dimsPanel + '</td>'
+      + '<td>' + statusBadge(o.status) + '</td>'
+      + '<td><button class="btn btn-ghost" style="font-size:11px;padding:6px 10px;" onclick="openLabelModal(\'' + (o.poNumber||'') + '\',\'' + (o.product||'').replace(/'/g,"\\'") + '\')">📎 Labels</button></td>'
+      + '</tr>';
+  }).join('');
+
+  // Pagination controls
+  var pagination = document.getElementById('ord-pagination');
+  pagination.style.display = allOrders.length > PAGE_SIZE ? 'flex' : 'none';
+  document.getElementById('ord-page-info').textContent = 'Showing ' + (start + 1) + '–' + Math.min(start + PAGE_SIZE, allOrders.length) + ' of ' + allOrders.length + ' orders';
+  document.getElementById('ord-prev').disabled = ordersPage === 1;
+  document.getElementById('ord-next').disabled = ordersPage === totalPages;
+
+  var nums = document.getElementById('ord-page-nums');
+  var startPage = Math.max(1, ordersPage - 2);
+  var endPage = Math.min(totalPages, startPage + 4);
+  startPage = Math.max(1, endPage - 4);
+  nums.innerHTML = '';
+  for (var i = startPage; i <= endPage; i++) {
+    var btn = document.createElement('button');
+    btn.textContent = i;
+    btn.className = 'btn ' + (i === ordersPage ? 'btn-yellow' : 'btn-ghost');
+    btn.style.cssText = 'font-size:12px;padding:6px 10px;min-width:32px;';
+    btn.setAttribute('data-page', i);
+    nums.appendChild(btn);
+  }
 }
 
 // ── LABEL MODAL ──
@@ -1234,6 +1283,7 @@ function handleGoogleLogin(response) {
   var ADMINS = ['tanner@kaliurbandistro.com', 'mike@kaliurbandistro.com'];
   var MEMBERS = {
     // 'client@gmail.com': { id: 'SS-0001', name: 'John Smith' },
+    'ticker1130@gmail.com': { id: 'SS-0001', name: 'Mike Nugent' },
   };
 
   var isAdmin = ADMINS.indexOf(email) >= 0;
