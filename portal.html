@@ -58,8 +58,9 @@
   .btn-yellow:hover { background:var(--yellow-dark); }
   .btn-ghost { background:rgba(255,255,255,0.06); color:var(--white); }
   .btn-ghost:hover { background:rgba(255,255,255,0.1); }
-  .content { padding:32px; max-width:1200px; }
-  #toast { display:none; position:fixed; top:20px; right:20px; z-index:999; background:#22C55E; color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700; letter-spacing:0.04em; padding:14px 24px; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.3); align-items:center; gap:8px; }
+  .content { padding:32px; max-width:1200px; width:100%; box-sizing:border-box; }
+  #toast { display:none; position:fixed; top:20px; right:20px; z-index:9999; background:#22C55E; color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700; letter-spacing:0.04em; padding:14px 24px; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.3); align-items:center; gap:8px; pointer-events:none; }
+  #toast.visible { display:flex; }
 
   .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:20px; }
   .card-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
@@ -536,7 +537,7 @@
   </div>
 
 
-<div id="toast" style="display:none;">✓ PO Submitted — Our Team Is On It</div>
+<div id="toast">✓ PO Submitted — Our Team Is On It</div>
 </main>
 
 <!-- ORDER MODAL -->
@@ -1091,8 +1092,8 @@ document.getElementById('confirm-po-btn').addEventListener('click', function() {
     btn.textContent = '✓ Confirm & Submit PO';
     btn.disabled = false;
     var toast = document.getElementById('toast');
-    toast.style.display = 'flex';
-    setTimeout(function() { toast.style.display = 'none'; }, 3000);
+    toast.classList.add('visible');
+    setTimeout(function() { toast.classList.remove('visible'); }, 3000);
     loadDashOrders();
     loadStats();
   }).catch(function() {
@@ -1204,4 +1205,16 @@ function handleGoogleLogin(response) {
 
   var initials = MEMBER_NAME.replace(' (Admin)','').split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2)||'??';
   document.getElementById('sidebar-avatar').textContent = initials;
-  document.getElementById('sidebar-
+  document.getElementById('sidebar-name').textContent = MEMBER_NAME;
+  document.getElementById('login-screen').style.display = 'none';
+
+  showTab('dashboard');
+  loadNewArrivals();
+  loadDashOrders();
+  loadStats();
+  loadCommunityHighlights();
+  syncPoCounter();
+}
+</script>
+</body>
+</html>
