@@ -1282,8 +1282,12 @@ function handleGoogleLogin(response) {
 
   var ADMINS = ['tanner@kaliurbandistro.com', 'mike@kaliurbandistro.com'];
   var MEMBERS = {
-    // 'client@gmail.com': { id: 'SS-0001', name: 'John Smith' },
+    'ticker1130@gmail.com': { id: 'SS-0001', name: 'Mike Nugent' },
   };
+  // fallback: also check email directly
+  if (!MEMBERS['ticker1130@gmail.com']) {
+    MEMBERS['ticker1130@gmail.com'] = { id: 'SS-0001', name: 'Mike Nugent' };
+  }
 
   var isAdmin = ADMINS.indexOf(email) >= 0;
   var member = MEMBERS[email];
@@ -1302,6 +1306,47 @@ function handleGoogleLogin(response) {
   MEMBER_ID = isAdmin ? 'ALL' : member.id;
   MEMBER_NAME = isAdmin ? name + ' (Admin)' : member.name;
 
+function handleGoogleLogin(response) {
+  console.log('Login callback fired');
+  var payload = JSON.parse(atob(response.credential.split('.')[1]));
+  var email = payload.email;
+  var name = payload.name;
+  console.log('Email:', email);
+
+  var ADMINS = ['tanner@kaliurbandistro.com', 'mike@kaliurbandistro.com'];
+  var MEMBERS = {
+    'ticker1130@gmail.com': { id: 'SS-0001', name: 'Mike Nugent' },
+  };
+  // fallback: also check email directly
+  if (!MEMBERS['ticker1130@gmail.com']) {
+    MEMBERS['ticker1130@gmail.com'] = { id: 'SS-0001', name: 'Mike Nugent' };
+  }
+
+  var isAdmin = ADMINS.indexOf(email) >= 0;
+  var member = MEMBERS[email];
+  console.log('ADMINS:', ADMINS);
+  console.log('MEMBERS:', JSON.stringify(MEMBERS));
+  console.log('isAdmin:', isAdmin);
+  console.log('member:', JSON.stringify(member));
+  console.log('email type:', typeof email, 'length:', email.length);
+  console.log('email chars:', email.split('').map(function(c){return c.charCodeAt(0);}));
+
+  if (!member && !isAdmin) {
+    document.getElementById('login-error').style.display = 'block';
+    return;
+  }
+
+  MEMBER_ID = isAdmin ? 'ALL' : member.id;
+  MEMBER_NAME = isAdmin ? name + ' (Admin)' : member.name;
+
+  // Save session so page refresh doesn't log out
+  sessionStorage.setItem('ss_member_id', MEMBER_ID);
+  sessionStorage.setItem('ss_member_name', MEMBER_NAME);
+
+  startPortal();
+}
+
+function startPortal() {
   var initials = MEMBER_NAME.replace(' (Admin)','').split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2)||'??';
   document.getElementById('sidebar-avatar').textContent = initials;
   document.getElementById('sidebar-name').textContent = MEMBER_NAME;
@@ -1314,6 +1359,17 @@ function handleGoogleLogin(response) {
   loadCommunityHighlights();
   syncPoCounter();
 }
+
+// Restore session on page load
+(function() {
+  var savedId   = sessionStorage.getItem('ss_member_id');
+  var savedName = sessionStorage.getItem('ss_member_name');
+  if (savedId && savedName) {
+    MEMBER_ID   = savedId;
+    MEMBER_NAME = savedName;
+    startPortal();
+  }
+})();
 </script>
 </body>
 </html>
