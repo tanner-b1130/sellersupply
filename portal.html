@@ -1176,7 +1176,7 @@ document.getElementById('confirm-po-btn').addEventListener('click', function() {
       poNumber:   poNum,
       date:       new Date().toLocaleDateString('en-US'),
       member:     MEMBER_NAME.replace(' (Admin)',''),
-      memberId:   MEMBER_ID,
+      memberId:   MEMBER_ID === 'ALL' ? 'ADMIN-' + MEMBER_NAME.replace(' (Admin)','').split(' ')[0].toUpperCase() : MEMBER_ID,
       product:    document.getElementById('po-prod-p').textContent,
       qty:        qty,
       unitCost:   cost,
@@ -1293,7 +1293,7 @@ function handleGoogleLogin(response) {
 
   var ADMINS = ['tanner@kaliurbandistro.com', 'mike@kaliurbandistro.com'];
   var MEMBERS = {
-    'ticker1130@gmail.com': { id: 'SS-0001', name: 'TEST MEMBER' },
+    'ticker1130@gmail.com': { id: 'SS-0001', name: 'Mike Nugent' },
   };
 
   var isAdmin = ADMINS.indexOf(email) >= 0;
