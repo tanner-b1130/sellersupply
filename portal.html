@@ -1361,7 +1361,7 @@ function startPortal() {
 }
 
 // Restore session on page load
-(function() {
+window.addEventListener('load', function() {
   var savedId   = sessionStorage.getItem('ss_member_id');
   var savedName = sessionStorage.getItem('ss_member_name');
   if (savedId && savedName) {
@@ -1369,7 +1369,7 @@ function startPortal() {
     MEMBER_NAME = savedName;
     startPortal();
   }
-})();
+});
 </script>
 </body>
 </html>
