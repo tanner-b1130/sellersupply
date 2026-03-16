@@ -728,33 +728,37 @@
     .nav-links {
       display: none;
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 68px; left: 0; right: 0;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 24px;
+      gap: 22px;
       background: #060E1F;
+      border-bottom: 1px solid rgba(245, 197, 0, 0.2);
       z-index: 150;
-      padding: 80px 20px 40px;
-      overflow-y: auto;
+      padding: 28px 20px;
     }
     .nav-links.open { display: flex; }
     .nav-links a {
-      font-size: 20px;
-      letter-spacing: 0.1em;
+      font-size: 16px;
+      letter-spacing: 0.08em;
       color: var(--white) !important;
     }
     .nav-cta {
-      font-size: 16px !important;
-      padding: 14px 36px !important;
-      width: 80%;
-      text-align: center;
+      font-size: 15px !important;
+      padding: 12px 0 !important;
+      width: 220px !important;
+      text-align: center !important;
+      display: block !important;
     }
-    .nav-links a[href="portal.html"] {
-      font-size: 16px !important;
-      padding: 14px 36px !important;
-      width: 80%;
-      text-align: center;
+    .nav-links a[href="portal.html"],
+    #memberLogin {
+      font-size: 15px !important;
+      padding: 12px 0 !important;
+      width: 220px !important;
+      text-align: center !important;
+      display: block !important;
+      margin-top: 0 !important;
     }
     .nav-logo img { height: 36px; }
     .nav-logo span { font-size: 18px; }
@@ -863,7 +867,7 @@
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="#testimonials">Results</a></li>
     <li><a href="#pricing" class="nav-cta">Get Access</a></li>
-    <li><a href="portal.html" style="background:transparent;border:2px solid var(--yellow);color:var(--yellow);padding:10px 20px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;transition:all 0.2s;">Member Login</a></li>
+    <li><a href="portal.html" id="memberLogin" style="background:transparent;border:2px solid var(--yellow);color:var(--yellow);padding:10px 20px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;transition:all 0.2s;">Member Login</a></li>
   </ul>
 </nav>
 
