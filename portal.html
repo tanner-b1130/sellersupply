@@ -715,7 +715,7 @@ function loadDashOrders() {
           + '<td style="color:var(--gray);font-size:12px;">' + (o.poNumber||'—') + '</td>'
           + '<td><div class="pname">' + (o.product||'—') + '</div></td>'
           + '<td>' + statusBadge(o.status) + '</td>'
-          + '<td><span class="pr pr-cost">' + (o.total||'—') + '</span></td>'
+          + '<td><span class="pr pr-cost">$' + (parseFloat(String(o.total||'0').replace(/[$,]/g,''))||0).toFixed(2) + '</span></td>'
           + '<td style="color:var(--gray);font-size:12px;">' + (o.date||'—') + '</td>'
           + '</tr>';
       }).join('');
@@ -1196,7 +1196,7 @@ document.getElementById('confirm-po-btn').addEventListener('click', function() {
   btn.disabled = true;
   var poNum = document.getElementById('po-num').textContent.replace('PO #','');
   var qty = parseInt(document.getElementById('po-qty-p').textContent) || 1;
-  var cost = parseFloat(String(document.getElementById('po-cost-p').textContent).replace('$','')) || 0;
+  var cost = parseFloat(String(document.getElementById('po-cost-p').textContent).replace(/[$,]/g,'')) || 0;
   fetch(SCRIPT_URL, {
     method: 'POST',
     body: JSON.stringify({
@@ -1207,7 +1207,7 @@ document.getElementById('confirm-po-btn').addEventListener('click', function() {
       product:    document.getElementById('po-prod-p').textContent,
       qty:        qty,
       unitCost:   cost,
-      total:      '$' + (cost * qty).toFixed(2),
+      total:      (cost * qty).toFixed(2),
       platform:   document.getElementById('po-plat-p').textContent,
       notes:      document.getElementById('po-notes-p').textContent
     })
