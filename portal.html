@@ -925,13 +925,24 @@ function renderCatalog() {
           : '<span class="bdg ' + platClass + '">' + p.platform + '</span>')
       : '—';
     var safeName = p.name.replace(/'/g, "\\'");
+    var stockQty = (p.stockQty !== undefined && p.stockQty !== '' && p.stockQty !== null) ? parseInt(p.stockQty) : null;
+    var isUnlimited = (stockQty === null || isNaN(stockQty));
+    var isOutOfStock = !isUnlimited && stockQty <= 0;
+    var stockBadge = isUnlimited
+      ? ''
+      : (isOutOfStock
+          ? '<div style="font-size:11px;color:var(--red);font-weight:700;margin-top:4px;">Out of Stock</div>'
+          : '<div style="font-size:11px;color:var(--gray);margin-top:4px;">' + stockQty + ' units available</div>');
+    var orderBtn = isOutOfStock
+      ? '<button class="btn" style="font-size:11px;padding:6px 12px;opacity:0.4;cursor:not-allowed;background:var(--surface2);color:var(--gray);border:1px solid var(--border);" disabled>Out of Stock</button>'
+      : '<button class="btn btn-yellow" style="font-size:11px;padding:6px 12px;" onclick="openOrderModal(\'' + safeName + '\',' + cost + ',' + (isUnlimited ? 'null' : stockQty) + ')">Order</button>';
     return '<tr>'
-      + '<td><div class="pname">' + p.name + '</div>' + (p.notes ? '<div class="pcat">' + p.notes + '</div>' : '') + '</td>'
+      + '<td><div class="pname">' + p.name + '</div>' + (p.notes ? '<div class="pcat">' + p.notes + '</div>' : '') + stockBadge + '</td>'
       + '<td><span class="pr pr-cost">$' + cost.toFixed(2) + '</span></td>'
       + '<td><span class="pr pr-sell">' + (sell > 0 ? '$' + sell.toFixed(2) : '—') + '</span></td>'
       + '<td>' + (margin > 0 ? '<span style="color:var(--green);font-weight:700;">~' + margin + '%</span>' : '—') + '</td>'
       + '<td>' + platBadge + '</td>'
-      + '<td><button class="btn btn-yellow" style="font-size:11px;padding:6px 12px;" onclick="openOrderModal(\'' + safeName + '\',' + cost + ')">Order</button></td>'
+      + '<td>' + orderBtn + '</td>'
       + '</tr>';
   }).join('');
 
@@ -1114,11 +1125,17 @@ document.getElementById('submit-labels-btn').addEventListener('click', function(
 });
 
 // ── PO / ORDER MODAL ──
-function openOrderModal(productName, cost) {
+function openOrderModal(productName, cost, maxQty) {
   document.getElementById('po-product').value = productName || '';
   document.getElementById('po-cost').value = cost || '';
   document.getElementById('po-qty').value = '';
   document.getElementById('po-notes').value = '';
+  // Store max qty on the input for validation (null = unlimited)
+  var qtyInput = document.getElementById('po-qty');
+  qtyInput.removeAttribute('max');
+  if (maxQty !== null && maxQty !== undefined) {
+    qtyInput.setAttribute('max', maxQty);
+  }
   updateTotal();
   document.getElementById('modal-order').style.display = 'flex';
 }
@@ -1142,6 +1159,12 @@ document.getElementById('gen-po-btn').addEventListener('click', function() {
   var qty = parseInt(document.getElementById('po-qty').value) || 0;
   if (!product) { alert('Please enter a product name.'); return; }
   if (!qty) { alert('Please enter a quantity.'); return; }
+  // Stock qty validation
+  var maxQty = parseInt(document.getElementById('po-qty').getAttribute('max'));
+  if (!isNaN(maxQty) && qty > maxQty) {
+    alert('Only ' + maxQty + ' units are available. Please enter a quantity of ' + maxQty + ' or less.');
+    return;
+  }
   var cost = parseFloat(document.getElementById('po-cost').value) || 0;
   var total = cost * qty;
   poCounter++;
